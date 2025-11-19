@@ -1,9 +1,9 @@
 <template>
-  <div class="flex w-full h-screen text-gray-700 font-mono">
-    <div class="bg-gray-200 w-80 h-full">
+  <div class="flex w-full h-screen text-red-700 font-mono">
+    <div class="bg-red-200 w-80 h-full">
       <sidebarView />
     </div>
-    <div class="bg-gray-50 w-full h-full p-10 overflow-y-auto">
+    <div class="bg-red-100 w-full h-full overflow-y-auto">
       <NuxtPage />
     </div>
   </div>

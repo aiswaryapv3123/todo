@@ -1,7 +1,7 @@
 <template>
     <div>
         <!-- Add new task form -->
-        <addTaskForm />
+        <addTaskForm class="sticky"/>
 
         <!-- Task List -->
         <div>

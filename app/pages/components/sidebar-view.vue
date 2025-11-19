@@ -7,8 +7,42 @@
         <div class="text-xl font-semibold">
             John Doe
         </div>
-        <div class="text-xs text-gray-800">
+        <div class="text-xs text-red-800">
             Developer
-        </div>
+        </div><br />
+        <UNavigationMenu orientation="vertical" :items="items" class="data-[orientation=vertical]:w-48" />
     </div>
 </template>
+
+<script setup lang="ts">
+import type { NavigationMenuItem } from '@nuxt/ui'
+
+const items = ref<NavigationMenuItem[][]>([
+    [
+
+        {
+            label: 'Todo',
+            description: 'Fully styled and customizable components for Nuxt.',
+            icon: 'i-lucide-house',
+            to: '/'
+        },
+        {
+            label: 'Pomodoro',
+            description: 'Learn how to install and configure Nuxt UI in your application.',
+            icon: 'material-symbols:avg-time-outline',
+            to: '/pomodoro'
+        },
+        {
+            label: 'GitHub',
+            icon: 'i-simple-icons-github',
+            to: 'https://github.com/nuxt/ui',
+            target: '_blank'
+        },
+        {
+            label: 'Help',
+            icon: 'i-lucide-circle-help',
+            disabled: true
+        }
+    ]
+])
+</script>

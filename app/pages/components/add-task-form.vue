@@ -1,6 +1,6 @@
 <template>
     <!-- Add a task button -->
-    <div class="p-2 mt-6 border border-gray-700 rounded-md " @click="showAddTask = !showAddTask">
+    <div class="p-2 mt-6 border border-red-700 rounded-md " @click="showAddTask = !showAddTask">
         <div class="flex items-center">
             <UIcon name="material-symbols:add-2" class="size-5 mr-2" />
             <div>Add a task</div>
@@ -12,7 +12,9 @@
 
                 <!-- Task Name -->
                 <UFormField label="Task Title" name="taskName" required>
-                    <UInput v-model="taskName" class="w-full" :maxlength=100>
+                    <UInput v-model="taskName" class="w-full" :maxlength=100 :ui="{
+                        base: 'bg-transparent border border-red-700',
+                    }">
                         <template #leading>
                             <UIcon name="mingcute:task-2-line" class="text-gray-500" />
                         </template>
@@ -21,7 +23,9 @@
 
                 <!-- Task Description -->
                 <UFormField label="Description" name="description" class="mt-2" required>
-                    <UTextarea v-model="description" class="w-full " :rows="3" :maxrows="5" />
+                    <UTextarea v-model="description" class="w-full" :rows="3" :maxrows="5" :ui="{
+                        base: 'bg-transparent border border-red-700',
+                    }" />
                 </UFormField>
 
                 <div class="flex w-full gap-3">
@@ -29,23 +33,27 @@
 
                     <div class="w-1/2 flex flex-col gap-1">
                         <div class="block text-sm font-medium text-gray-700 dark:text-gray-300 mt-2">Status</div>
-                        <USelectMenu v-model="taskStatus" :items="taskStatuses" placeholder="Select" class="w-full" />
+                        <USelectMenu v-model="taskStatus" :items="taskStatuses" placeholder="Select" class="w-full" :ui="{
+                            base: 'bg-transparent border border-red-700',
+                        }" />
                     </div>
 
                     <!-- Task Priority -->
                     <div class="w-1/2 flex flex-col gap-1">
                         <div class="block text-sm font-medium text-gray-700 dark:text-gray-300 mt-2">Priority</div>
-                        <USelectMenu v-model="taskPriority" :items="taskPriorities" placeholder="Select"
-                            class="w-full" />
+                        <USelectMenu v-model="taskPriority" :items="taskPriorities" placeholder="Select" class="w-full"
+                            :ui="{
+                                base: 'bg-transparent border border-red-700',
+                            }" />
                     </div>
                 </div>
             </div><br />
             <div class="flex gap-5">
-                <UButton class="mb-10 px-8" @click="onSubmit">
+                <UButton class="mb-10 px-8 bg-red-700" @click="onSubmit">
                     Add
                 </UButton>
-                <UButton class="mb-10 bg-gray-200 text-black-100 " @click="showAddTask = false" color="neutral"
-                    variant="soft">
+                <UButton class="mb-10  bg-transparent border border-red-700 text-gray-700" @click="showAddTask = false"
+                    color="neutral" variant="outline">
                     Cancel
                 </UButton>
             </div>

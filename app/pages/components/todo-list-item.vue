@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="border border-gray-700 rounded-md p-2 mb-4 space-y-4">
+        <div class="border border-red-700 rounded-md p-2 mb-4 space-y-4">
             <div class="flex place-content-between">
                 <div class="flex">
                     <UIcon name="famicons:hourglass-outline" class="size-5 mr-2" />

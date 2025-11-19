@@ -1,7 +1,7 @@
 <!-- Dashboard View -->
 <template>
-  <div>
-    <HeaderView />
+  <div class="p-10">
+    <HeaderView class="sticky"/>
     <todoList />
   </div>
 </template>
