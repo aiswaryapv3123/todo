@@ -1,9 +1,21 @@
 <template>
-    <div class=" w-full flex   ">
-        <!-- collapsible icon -->
-        <div class="fixed top-8 left-80 z-50">
+    <div class="w-full flex">
+        <div class="fixed my-10 ml-10 flex gap-5 ">
+            <!-- collapsible icon -->
             <UIcon :name='!isOpen ? "iconoir:sidebar-collapse" : "octicon:sidebar-collapse-24"'
-                class="text-gray-700 size-5" @click="isOpen = !isOpen" />
+                class="text-gray-400 size-6 " @click="isOpen = !isOpen" />
+            <!-- Settings menu -->
+
+            <UModal title="Settings" description="Now update focus time and break time as per your wish!">
+                <UIcon name="material-symbols:settings-outline" class="text-gray-400 size-6" />
+
+
+                <template #body="{ close }">
+                    <pomodoroSettings :focusTimeValue="focusTime" :breakTimeValue="breakTime"
+                        :onUpdateSettings="(...payload) => { onUpdateSettings(...payload); close(); }"
+                        :onCancelSettings="close" />
+                </template>
+            </UModal>
         </div>
 
         <!-- Timer content -->
@@ -14,11 +26,11 @@
                 </div>
                 <div class="text-red-700 font-bold text-6xl mb-5">{{ formatMMSS(counterTime) }}</div>
                 <div class="flex gap-3">
-                    <div class="bg-red-200 rounded-md px-10 w-50 py-2 text-red-700 text-center text-xl"
+                    <div class="bg-red-200 rounded-md px-10 w-50 py-2 text-red-700 text-center text-xl cursor-pointer"
                         @click="handlePrimaryButton">
                         {{ primaryButtonText }}
                     </div>
-                    <div class="bg-red-200 rounded-md px-10 w-50 py-2 text-red-700 text-center text-xl"
+                    <div class="bg-red-200 rounded-md px-10 w-50 py-2 text-red-700 text-center text-xl cursor-pointer"
                         @click="resetTimer(true)">
                         <div>Restart</div>
                     </div>
@@ -40,24 +52,47 @@
             </div>
         </Transition>
 
+
+
     </div>
 
 </template>
 
 <script setup lang="ts">
-import { useIntervalFn, useLocalStorage, useWebNotification } from '@vueuse/core'
+import { useIntervalFn, useLocalStorage, useWebNotification, useTitle } from '@vueuse/core'
 import pomodoroLogs from '../components/pomodoro-logs.vue'
+import pomodoroSettings from '../components/pomodoro-settings.vue'
 
+type TimerLimit = { focusTime: number, breakTime: number }
+const timerVal = useLocalStorage<TimerLimit[]>('timer', [])
+const focusTime = ref(timerVal.value[0]?.focusTime ?? 5)
+const breakTime = ref(timerVal.value[0]?.breakTime ?? 3)
+const counterTime = ref(focusTime.value)
+
+watch(
+    () => timerVal.value,
+    (newVal) => {
+        focusTime.value = newVal[0]?.focusTime ?? 0
+        breakTime.value = newVal[0]?.breakTime ?? 0
+        counterTime.value = focusTimeCompleted.value ? breakTime.value : focusTime.value
+    },
+    { deep: true }
+)
 
 const { isSupported, show, notification, onClick, onShow, onError, onClose } =
     useWebNotification()
-await Notification.requestPermission()
-const focusTime = 5
-const breakTime = 2
-const counterTime = ref(focusTime)
+
 const focusTimeCompleted = ref(false)
 const breakTimeCompleted = ref(false)
 const isOpen = ref(false)
+const title = useTitle()
+const audio = ref()
+
+onMounted(() => {
+
+    audio.value = new Audio('/sounds/alarm_clock.mp3')
+})
+
 
 type Logs = { id: number, message: String }
 const timerLog = useLocalStorage<Logs[]>('logs', [])
@@ -66,6 +101,8 @@ const { pause, resume, isActive } = useIntervalFn(() => {
 
     if (counterTime.value > 0) {
         counterTime.value--
+        title.value = !focusTimeCompleted.value ? counterTime.value === 0 ? `${formatMMSS(breakTime.value)} Time for a break` : `${formatMMSS(counterTime.value)} Focus Time` : counterTime.value === 0 ? `${formatMMSS(focusTime.value)} Start your focus time` : `${formatMMSS(counterTime.value)} Break Time`
+
         return
     } else {
         if (!focusTimeCompleted.value) {
@@ -79,6 +116,8 @@ const { pause, resume, isActive } = useIntervalFn(() => {
         }
         resetTimer(false)
     }
+    title.value = !focusTimeCompleted.value ? counterTime.value === 0 ? `${formatMMSS(breakTime.value)} Time for a break` : `${formatMMSS(counterTime.value)} Focus Time` : counterTime.value === 0 ? `${formatMMSS(focusTime.value)} Start your focus time` : `${formatMMSS(counterTime.value)} Break Time`
+
 }, 1000, { immediate: false })
 
 
@@ -86,20 +125,22 @@ const { pause, resume, isActive } = useIntervalFn(() => {
 function resetTimer(reset: boolean) {
     if (focusTimeCompleted.value) {
         if (!reset) {
-            const focusLog: Logs = { "id": Date.now(), "message": `${formatDuration(focusTime)} Focus time completed` }
+            const focusLog: Logs = { "id": Date.now(), "message": `${formatDuration(focusTime.value)} Focus time completed` }
             timerLog.value.unshift(focusLog)
 
         }
         showNotification("Break Time !", "Your focus session ended")
-        counterTime.value = breakTime
+
+        counterTime.value = breakTime.value
 
     } else if (!focusTimeCompleted.value) {
         if (!reset) {
-            const breakLog: Logs = { "id": Date.now(), "message": `${formatDuration(breakTime)} Break time completed` }
+            const breakLog: Logs = { "id": Date.now(), "message": `${formatDuration(breakTime.value)} Break time completed` }
             timerLog.value.unshift(breakLog)
         }
         showNotification("Break Time finished !", "Start focus session now...")
-        counterTime.value = focusTime
+
+        counterTime.value = focusTime.value
     }
     pause()
 }
@@ -107,25 +148,26 @@ function resetTimer(reset: boolean) {
 
 const primaryButtonText = computed(() => {
     if (isActive.value) return 'Pause'
-    if ((counterTime.value < focusTime && !focusTimeCompleted.value) || (counterTime.value < breakTime && focusTimeCompleted.value)) return 'Resume'
+    if ((counterTime.value < focusTime.value && !focusTimeCompleted.value) || (counterTime.value < breakTime.value && focusTimeCompleted.value)) return 'Resume'
     return 'Start'
 })
 
 
 function handlePrimaryButton() {
+
     const isFocusCompleted = focusTimeCompleted.value
     const maxTime = isFocusCompleted ? breakTime : focusTime
-    const focusTimeCompletedStatus = isFocusCompleted ? focusTimeCompleted : !focusTimeCompleted
+    const focusTimeCompletedStatus = isFocusCompleted ? focusTimeCompleted.value : !focusTimeCompleted.value
 
 
     if (isActive.value) {
         focusTimeCompletedStatus
         pause()
-    } else if (counterTime.value < maxTime) {
+    } else if (counterTime.value < maxTime.value) {
         focusTimeCompletedStatus
         resume()
     } else {
-        counterTime.value = maxTime
+        counterTime.value = maxTime.value
         resume()
     }
 
@@ -158,6 +200,18 @@ async function showNotification(title: string, body: string) {
         await Notification.requestPermission()
     }
     show({ title, body })
+
+    audio.value.play()
+}
+
+function onUpdateSettings(fTime: number, bTime: number) {
+    const timerData: TimerLimit = {
+        focusTime: fTime,
+        breakTime: bTime
+    }
+    const val = timerVal.value.unshift(timerData)
+
+    console.log("Timer value pushed to storage " + timerVal.value[0]?.focusTime);
 }
 
 </script>
